@@ -7,7 +7,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-// Icons as simple SVG components
 const Icons = {
   Plus: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
   Search: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
@@ -34,6 +33,7 @@ export default function SecretCardSociety() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [showSellForm, setShowSellForm] = useState(false)
   const [showSalesHistory, setShowSalesHistory] = useState(false)
+  const [showDashboard, setShowDashboard] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
   const [sellingProduct, setSellingProduct] = useState(null)
   const [formData, setFormData] = useState({ name: '', set: '', productType: 'Single Card', language: 'English', condition: 'NM', grade: '', quantity: 1, purchasePrice: '', currentValue: '' })
@@ -50,7 +50,6 @@ export default function SecretCardSociety() {
   const [lowStockThreshold, setLowStockThreshold] = useState(3)
   const [filters, setFilters] = useState({ productType: '', language: '', condition: '', showLowStock: false })
   const [showFilters, setShowFilters] = useState(false)
-  const [showDashboard, setShowDashboard] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -171,94 +170,104 @@ export default function SecretCardSociety() {
   const topProducts = [...products].sort((a, b) => (b.currentValue * b.quantity) - (a.currentValue * a.quantity)).slice(0, 5)
   const avgSaleValue = sales.length > 0 ? sales.reduce((s, sale) => s + sale.salePrice * sale.quantity, 0) / sales.length : 0
 
-  if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center"><div className="text-center"><Icons.Loader /><p className="text-gray-400 mt-2">Loading...</p></div></div>
+  if (loading) return <div style={{ minHeight: '100vh', backgroundColor: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icons.Loader /><p style={{ color: '#9ca3af', marginLeft: '8px' }}>Loading...</p></div>
 
   return (
-    <div className="min-h-screen bg-gray-900 p-3 md:p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-          <div><h1 className="text-xl font-bold text-orange-400">Secret Card Society</h1><p className="text-gray-400 text-xs">Inventory Management {syncing && '• Syncing...'}</p></div>
-          <div className="flex gap-2 mt-2 md:mt-0">
-            <button onClick={() => exportToCSV('inventory')} className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 text-xs"><Icons.Download /> Export</button>
+    <div style={{ minHeight: '100vh', backgroundColor: '#111827', padding: '12px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#fb923c', margin: 0 }}>Secret Card Society</h1>
+            <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>Inventory Management {syncing && '• Syncing...'}</p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={() => setShowDashboard(true)} style={{ padding: '6px 12px', backgroundColor: '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>📊 Analytics</button>
+            <button onClick={() => exportToCSV('inventory')} style={{ padding: '6px 12px', backgroundColor: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}><Icons.Download /> Export</button>
           </div>
         </div>
 
+        {/* Low Stock Alert */}
         {lowStockProducts.length > 0 && (
-          <div className="mb-4 p-3 bg-amber-900/30 border border-amber-600 rounded-lg">
-            <div className="flex items-center gap-2 text-amber-400 text-sm font-medium mb-1"><Icons.Alert /> Low Stock ({lowStockProducts.length})</div>
-            <div className="flex flex-wrap gap-2">{lowStockProducts.slice(0, 5).map(p => <span key={p.id} className="text-xs bg-amber-900/50 text-amber-300 px-2 py-1 rounded">{p.name} ({p.quantity})</span>)}</div>
+          <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: 'rgba(217, 119, 6, 0.2)', border: '1px solid #d97706', borderRadius: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fbbf24', fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}><Icons.Alert /> Low Stock ({lowStockProducts.length})</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>{lowStockProducts.slice(0, 5).map(p => <span key={p.id} style={{ padding: '2px 8px', backgroundColor: 'rgba(217, 119, 6, 0.3)', color: '#fcd34d', borderRadius: '4px', fontSize: '11px' }}>{p.name} ({p.quantity})</span>)}</div>
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
-          <div className="bg-gray-800 rounded-lg p-3 border border-gray-700"><p className="text-xs text-gray-400">Items</p><p className="text-lg font-bold text-orange-400">{totalItems}</p></div>
-          <div className="bg-gray-800 rounded-lg p-3 border border-gray-700"><p className="text-xs text-gray-400">Value</p><p className="text-lg font-bold text-orange-400">${totalValue.toFixed(2)}</p></div>
-          <div className="bg-gray-800 rounded-lg p-3 border border-gray-700"><p className="text-xs text-gray-400">Cost</p><p className="text-lg font-bold text-gray-300">${totalCost.toFixed(2)}</p></div>
-          <div className="bg-gray-800 rounded-lg p-3 border border-gray-700"><p className="text-xs text-gray-400">Unrealized</p><p className={`text-lg font-bold ${unrealizedPL >= 0 ? 'text-green-400' : 'text-red-400'}`}>${unrealizedPL.toFixed(2)}</p></div>
-          <div className="bg-gray-800 rounded-lg p-3 border border-gray-700"><p className="text-xs text-gray-400">Realized</p><p className={`text-lg font-bold ${realizedPL >= 0 ? 'text-green-400' : 'text-red-400'}`}>${realizedPL.toFixed(2)}</p></div>
+        {/* Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px', marginBottom: '16px' }}>
+          <div style={{ backgroundColor: '#1f2937', borderRadius: '8px', padding: '12px', border: '1px solid #374151' }}><p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Items</p><p style={{ fontSize: '18px', fontWeight: 'bold', color: '#fb923c', margin: 0 }}>{totalItems}</p></div>
+          <div style={{ backgroundColor: '#1f2937', borderRadius: '8px', padding: '12px', border: '1px solid #374151' }}><p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Value</p><p style={{ fontSize: '18px', fontWeight: 'bold', color: '#fb923c', margin: 0 }}>${totalValue.toFixed(2)}</p></div>
+          <div style={{ backgroundColor: '#1f2937', borderRadius: '8px', padding: '12px', border: '1px solid #374151' }}><p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Cost</p><p style={{ fontSize: '18px', fontWeight: 'bold', color: '#d1d5db', margin: 0 }}>${totalCost.toFixed(2)}</p></div>
+          <div style={{ backgroundColor: '#1f2937', borderRadius: '8px', padding: '12px', border: '1px solid #374151' }}><p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Unrealized</p><p style={{ fontSize: '18px', fontWeight: 'bold', color: unrealizedPL >= 0 ? '#4ade80' : '#f87171', margin: 0 }}>${unrealizedPL.toFixed(2)}</p></div>
+          <div style={{ backgroundColor: '#1f2937', borderRadius: '8px', padding: '12px', border: '1px solid #374151' }}><p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Realized</p><p style={{ fontSize: '18px', fontWeight: 'bold', color: realizedPL >= 0 ? '#4ade80' : '#f87171', margin: 0 }}>${realizedPL.toFixed(2)}</p></div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-2 mb-4">
-          <div className="flex-1 relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"><Icons.Search /></span>
-            <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2 bg-gray-800 border border-gray-700 text-gray-100 placeholder-gray-500 rounded-lg text-sm" />
+        {/* Search & Actions */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '150px', position: 'relative' }}>
+            <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6b7280' }}><Icons.Search /></span>
+            <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '8px 8px 8px 36px', backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px', color: 'white', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
           </div>
-          <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm ${showFilters ? 'bg-orange-600 text-white' : 'bg-gray-700 text-gray-200'}`}><Icons.Filter /> Filters</button>
-          <button onClick={() => setShowSalesHistory(true)} className="flex items-center justify-center gap-1 bg-gray-700 text-gray-200 px-3 py-2 rounded-lg text-sm"><Icons.History /> Sales</button>
-          <button onClick={() => setShowAddForm(true)} className="flex items-center justify-center gap-1 bg-orange-600 text-white px-3 py-2 rounded-lg text-sm"><Icons.Plus /> Add</button>
+          <button onClick={() => setShowFilters(!showFilters)} style={{ padding: '8px 12px', backgroundColor: showFilters ? '#ea580c' : '#374151', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}><Icons.Filter /> Filters</button>
+          <button onClick={() => setShowSalesHistory(true)} style={{ padding: '8px 12px', backgroundColor: '#374151', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}><Icons.History /> Sales</button>
+          <button onClick={() => setShowAddForm(true)} style={{ padding: '8px 12px', backgroundColor: '#ea580c', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}><Icons.Plus /> Add</button>
         </div>
 
+        {/* Filters */}
         {showFilters && (
-          <div className="mb-4 p-3 bg-gray-800 border border-gray-700 rounded-lg">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <div><label className="block text-xs text-gray-400 mb-1">Type</label><select value={filters.productType} onChange={(e) => setFilters({ ...filters, productType: e.target.value })} className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 text-gray-100 rounded text-sm"><option value="">All</option><option>Single Card</option><option>Slab</option><option>Booster Box</option><option>Booster Pack</option><option>ETB</option><option>Collection Box</option><option>Tin</option><option>Bundle</option><option>Other</option></select></div>
-              <div><label className="block text-xs text-gray-400 mb-1">Language</label><select value={filters.language} onChange={(e) => setFilters({ ...filters, language: e.target.value })} className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 text-gray-100 rounded text-sm"><option value="">All</option><option>English</option><option>Japanese</option><option>Korean</option><option>Chinese (Traditional)</option><option>Chinese (Simplified)</option></select></div>
-              <div><label className="block text-xs text-gray-400 mb-1">Condition</label><select value={filters.condition} onChange={(e) => setFilters({ ...filters, condition: e.target.value })} className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 text-gray-100 rounded text-sm"><option value="">All</option><option value="NM">NM</option><option value="LP">LP</option><option value="MP">MP</option><option value="HP">HP</option><option value="DMG">DMG</option></select></div>
-              <div><label className="block text-xs text-gray-400 mb-1">Low Stock ≤</label><input type="number" min="1" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(parseInt(e.target.value) || 3)} className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 text-gray-100 rounded text-sm" /></div>
-              <div className="flex items-end"><label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={filters.showLowStock} onChange={(e) => setFilters({ ...filters, showLowStock: e.target.checked })} className="w-4 h-4 rounded" /><span className="text-sm text-amber-400">Low Stock Only</span></label></div>
+          <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px' }}>
+              <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Type</label><select value={filters.productType} onChange={(e) => setFilters({ ...filters, productType: e.target.value })} style={{ width: '100%', padding: '6px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '12px' }}><option value="">All</option><option>Single Card</option><option>Slab</option><option>Booster Box</option><option>Booster Pack</option><option>ETB</option><option>Collection Box</option><option>Tin</option><option>Bundle</option><option>Other</option></select></div>
+              <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Language</label><select value={filters.language} onChange={(e) => setFilters({ ...filters, language: e.target.value })} style={{ width: '100%', padding: '6px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '12px' }}><option value="">All</option><option>English</option><option>Japanese</option><option>Korean</option><option>Chinese (Traditional)</option><option>Chinese (Simplified)</option></select></div>
+              <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Condition</label><select value={filters.condition} onChange={(e) => setFilters({ ...filters, condition: e.target.value })} style={{ width: '100%', padding: '6px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '12px' }}><option value="">All</option><option value="NM">NM</option><option value="LP">LP</option><option value="MP">MP</option><option value="HP">HP</option><option value="DMG">DMG</option></select></div>
+              <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Low Stock ≤</label><input type="number" min="1" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(parseInt(e.target.value) || 3)} style={{ width: '100%', padding: '6px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '12px', boxSizing: 'border-box' }} /></div>
+              <div style={{ display: 'flex', alignItems: 'end' }}><label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', color: '#fbbf24', fontSize: '12px' }}><input type="checkbox" checked={filters.showLowStock} onChange={(e) => setFilters({ ...filters, showLowStock: e.target.checked })} /> Low Stock Only</label></div>
             </div>
-            <button onClick={() => setFilters({ productType: '', language: '', condition: '', showLowStock: false })} className="mt-2 text-xs text-gray-400 hover:text-gray-200">Clear</button>
+            <button onClick={() => setFilters({ productType: '', language: '', condition: '', showLowStock: false })} style={{ marginTop: '8px', background: 'none', border: 'none', color: '#9ca3af', fontSize: '11px', cursor: 'pointer' }}>Clear filters</button>
           </div>
         )}
 
-        <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-700">
+        {/* Products Table */}
+        <div style={{ backgroundColor: '#1f2937', borderRadius: '8px', border: '1px solid #374151', overflow: 'hidden' }}>
           {filteredProducts.length === 0 ? (
-            <div className="p-8 text-center text-gray-400"><Icons.Package /><p className="font-medium mt-2">No products</p><p className="text-xs">{products.length > 0 ? 'Adjust filters' : 'Add your first product'}</p></div>
+            <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}><Icons.Package /><p style={{ marginTop: '8px' }}>No products</p><p style={{ fontSize: '12px' }}>{products.length > 0 ? 'Adjust filters' : 'Add your first product'}</p></div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-900 border-b border-gray-700">
-                  <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">Product</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">Type</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">Lang</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">Cond</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">Qty</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">Cost</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">Value</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-400 uppercase">P/L</th>
-                    <th className="px-3 py-2 text-right text-xs font-medium text-gray-400 uppercase">Actions</th>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#111827' }}>
+                    <th style={{ padding: '10px', textAlign: 'left', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', borderBottom: '1px solid #374151' }}>Product</th>
+                    <th style={{ padding: '10px', textAlign: 'left', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', borderBottom: '1px solid #374151' }}>Type</th>
+                    <th style={{ padding: '10px', textAlign: 'left', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', borderBottom: '1px solid #374151' }}>Lang</th>
+                    <th style={{ padding: '10px', textAlign: 'left', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', borderBottom: '1px solid #374151' }}>Cond</th>
+                    <th style={{ padding: '10px', textAlign: 'left', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', borderBottom: '1px solid #374151' }}>Qty</th>
+                    <th style={{ padding: '10px', textAlign: 'left', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', borderBottom: '1px solid #374151' }}>Cost</th>
+                    <th style={{ padding: '10px', textAlign: 'left', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', borderBottom: '1px solid #374151' }}>Value</th>
+                    <th style={{ padding: '10px', textAlign: 'left', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', borderBottom: '1px solid #374151' }}>P/L</th>
+                    <th style={{ padding: '10px', textAlign: 'right', fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', borderBottom: '1px solid #374151' }}>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700">
+                <tbody>
                   {filteredProducts.map((p) => {
                     const pl = (p.currentValue - p.purchasePrice) * p.quantity
                     const isLow = p.quantity <= lowStockThreshold
                     return (
-                      <tr key={p.id} className={isLow ? 'bg-amber-900/10' : ''}>
-                        <td className="px-3 py-2"><div className="text-sm font-medium text-orange-400">{p.name}</div><div className="text-xs text-gray-400">{p.set}</div></td>
-                        <td className="px-3 py-2 text-xs text-gray-300">{p.productType}</td>
-                        <td className="px-3 py-2 text-xs text-gray-300">{(p.language || 'EN').substring(0, 3)}</td>
-                        <td className="px-3 py-2 text-xs text-gray-300">{p.condition}{p.grade && <span className="ml-1 text-amber-400">{p.grade}</span>}</td>
-                        <td className="px-3 py-2 text-sm text-gray-300">{isLow && <span className="text-amber-400 mr-1">⚠</span>}{p.quantity}</td>
-                        <td className="px-3 py-2 text-sm text-gray-300">${p.purchasePrice.toFixed(2)}</td>
-                        <td className="px-3 py-2 text-sm text-gray-300">${p.currentValue.toFixed(2)}</td>
-                        <td className="px-3 py-2"><span className={`text-sm font-medium ${pl >= 0 ? 'text-green-400' : 'text-red-400'}`}>${pl.toFixed(2)}</span></td>
-                        <td className="px-3 py-2 text-right">
+                      <tr key={p.id} style={{ backgroundColor: isLow ? 'rgba(217, 119, 6, 0.1)' : 'transparent' }}>
+                        <td style={{ padding: '10px', borderBottom: '1px solid #374151' }}><div style={{ color: '#fb923c', fontWeight: '500', fontSize: '13px' }}>{p.name}</div><div style={{ color: '#9ca3af', fontSize: '11px' }}>{p.set}</div></td>
+                        <td style={{ padding: '10px', borderBottom: '1px solid #374151', color: '#d1d5db', fontSize: '12px' }}>{p.productType}</td>
+                        <td style={{ padding: '10px', borderBottom: '1px solid #374151', color: '#d1d5db', fontSize: '12px' }}>{(p.language || 'EN').substring(0, 3)}</td>
+                        <td style={{ padding: '10px', borderBottom: '1px solid #374151', color: '#d1d5db', fontSize: '12px' }}>{p.condition}{p.grade && <span style={{ color: '#fbbf24', marginLeft: '4px' }}>{p.grade}</span>}</td>
+                        <td style={{ padding: '10px', borderBottom: '1px solid #374151', color: '#d1d5db', fontSize: '13px' }}>{isLow && <span style={{ color: '#fbbf24' }}>⚠ </span>}{p.quantity}</td>
+                        <td style={{ padding: '10px', borderBottom: '1px solid #374151', color: '#d1d5db', fontSize: '13px' }}>${p.purchasePrice.toFixed(2)}</td>
+                        <td style={{ padding: '10px', borderBottom: '1px solid #374151', color: '#d1d5db', fontSize: '13px' }}>${p.currentValue.toFixed(2)}</td>
+                        <td style={{ padding: '10px', borderBottom: '1px solid #374151', fontWeight: '500', fontSize: '13px', color: pl >= 0 ? '#4ade80' : '#f87171' }}>${pl.toFixed(2)}</td>
+                        <td style={{ padding: '10px', borderBottom: '1px solid #374151', textAlign: 'right' }}>
                           {deleteConfirmId === p.id ? (
-                            <><button onClick={() => handleDelete(p.id)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs mr-1">Y</button><button onClick={() => setDeleteConfirmId(null)} className="px-2 py-0.5 bg-gray-600 text-white rounded text-xs">N</button></>
+                            <><button onClick={() => handleDelete(p.id)} style={{ padding: '2px 8px', backgroundColor: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', marginRight: '4px' }}>Y</button><button onClick={() => setDeleteConfirmId(null)} style={{ padding: '2px 8px', backgroundColor: '#4b5563', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>N</button></>
                           ) : (
-                            <><button onClick={() => openAddStock(p)} className="text-blue-400 hover:text-blue-300 mr-1"><Icons.PlusCircle /></button><button onClick={() => openSellForm(p)} className="text-green-400 hover:text-green-300 mr-1"><Icons.Cart /></button><button onClick={() => handleEdit(p)} className="text-orange-400 hover:text-orange-300 mr-1"><Icons.Edit /></button><button onClick={() => setDeleteConfirmId(p.id)} className="text-red-400 hover:text-red-300"><Icons.Trash /></button></>
+                            <><button onClick={() => openAddStock(p)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#60a5fa', padding: '4px' }} title="Add Stock"><Icons.PlusCircle /></button><button onClick={() => openSellForm(p)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4ade80', padding: '4px' }} title="Sell"><Icons.Cart /></button><button onClick={() => handleEdit(p)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fb923c', padding: '4px' }} title="Edit"><Icons.Edit /></button><button onClick={() => setDeleteConfirmId(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f87171', padding: '4px' }} title="Delete"><Icons.Trash /></button></>
                           )}
                         </td>
                       </tr>
@@ -270,144 +279,294 @@ export default function SecretCardSociety() {
           )}
         </div>
 
+        {/* Add/Edit Modal */}
         {showAddForm && (
-          <div className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-800 rounded-lg max-w-md w-full border border-gray-700 max-h-[90vh] overflow-y-auto">
-              <div className="p-4">
-                <div className="flex justify-between mb-3"><h2 className="text-lg font-bold text-orange-400">{editingProduct ? 'Edit' : 'Add'} Product</h2><button onClick={resetForm} className="text-gray-400 hover:text-white"><Icons.X /></button></div>
-                <div className="space-y-3">
-                  <input type="text" placeholder="Product Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm" />
-                  <input type="text" placeholder="Set" value={formData.set} onChange={(e) => setFormData({ ...formData, set: e.target.value })} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm" />
-                  <div className="grid grid-cols-2 gap-2">
-                    <select value={formData.productType} onChange={(e) => setFormData({ ...formData, productType: e.target.value })} className="px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm"><option>Single Card</option><option>Slab</option><option>Booster Box</option><option>Booster Pack</option><option>ETB</option><option>Collection Box</option><option>Tin</option><option>Bundle</option><option>Other</option></select>
-                    <select value={formData.language} onChange={(e) => setFormData({ ...formData, language: e.target.value })} className="px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm"><option>English</option><option>Japanese</option><option>Korean</option><option>Chinese (Traditional)</option><option>Chinese (Simplified)</option></select>
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50 }}>
+            <div style={{ backgroundColor: '#1f2937', borderRadius: '8px', padding: '16px', width: '100%', maxWidth: '400px', maxHeight: '90vh', overflow: 'auto', border: '1px solid #374151' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 style={{ color: '#fb923c', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>{editingProduct ? 'Edit' : 'Add'} Product</h2>
+                <button onClick={resetForm} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}><Icons.X /></button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Product Name</label><input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="e.g., Charizard VMAX" style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Set</label><input type="text" value={formData.set} onChange={(e) => setFormData({ ...formData, set: e.target.value })} placeholder="e.g., Champion's Path" style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Type</label><select value={formData.productType} onChange={(e) => setFormData({ ...formData, productType: e.target.value })} style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px' }}><option>Single Card</option><option>Slab</option><option>Booster Box</option><option>Booster Pack</option><option>ETB</option><option>Collection Box</option><option>Tin</option><option>Bundle</option><option>Other</option></select></div>
+                  <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Language</label><select value={formData.language} onChange={(e) => setFormData({ ...formData, language: e.target.value })} style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px' }}><option>English</option><option>Japanese</option><option>Korean</option><option>Chinese (Traditional)</option><option>Chinese (Simplified)</option></select></div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Condition</label><select value={formData.condition} onChange={(e) => setFormData({ ...formData, condition: e.target.value })} style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px' }}><option value="NM">Near Mint</option><option value="LP">Lightly Played</option><option value="MP">Moderately Played</option><option value="HP">Heavily Played</option><option value="DMG">Damaged</option></select></div>
+                  <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Grade</label><input type="text" value={formData.grade} onChange={(e) => setFormData({ ...formData, grade: e.target.value })} placeholder="e.g., PSA 10" style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                  <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Qty</label><input type="number" min="1" value={formData.quantity} onChange={(e) => setFormData({ ...formData, quantity: e.target.value })} style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                  <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Cost SGD</label><input type="number" step="0.01" value={formData.purchasePrice} onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })} placeholder="0.00" style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                  <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Value SGD</label><input type="number" step="0.01" value={formData.currentValue} onChange={(e) => setFormData({ ...formData, currentValue: e.target.value })} placeholder="0.00" style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                </div>
+                <div style={{ padding: '12px', backgroundColor: '#374151', borderRadius: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}><span style={{ fontSize: '12px', color: '#9ca3af' }}>USD → SGD</span><div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ fontSize: '11px', color: '#6b7280' }}>Rate:</span><input type="number" step="0.01" value={exchangeRate} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 1.35)} style={{ width: '50px', padding: '4px', backgroundColor: '#1f2937', border: '1px solid #4b5563', borderRadius: '4px', color: 'white', fontSize: '11px' }} /></div></div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input type="number" step="0.01" value={usdInput} onChange={(e) => setUsdInput(e.target.value)} placeholder="USD" style={{ flex: 1, padding: '8px', backgroundColor: '#1f2937', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px' }} />
+                    <button onClick={() => usdInput && setFormData({ ...formData, purchasePrice: (parseFloat(usdInput) * exchangeRate).toFixed(2) })} style={{ padding: '8px', backgroundColor: '#ea580c', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '11px' }}>→Cost</button>
+                    <button onClick={() => usdInput && setFormData({ ...formData, currentValue: (parseFloat(usdInput) * exchangeRate).toFixed(2) })} style={{ padding: '8px', backgroundColor: '#16a34a', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '11px' }}>→Value</button>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <select value={formData.condition} onChange={(e) => setFormData({ ...formData, condition: e.target.value })} className="px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm"><option value="NM">Near Mint</option><option value="LP">Lightly Played</option><option value="MP">Moderately Played</option><option value="HP">Heavily Played</option><option value="DMG">Damaged</option></select>
-                    <input type="text" placeholder="Grade (PSA 10)" value={formData.grade} onChange={(e) => setFormData({ ...formData, grade: e.target.value })} className="px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <input type="number" placeholder="Qty" min="1" value={formData.quantity} onChange={(e) => setFormData({ ...formData, quantity: e.target.value })} className="px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm" />
-                    <input type="number" placeholder="Cost SGD" step="0.01" value={formData.purchasePrice} onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })} className="px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm" />
-                    <input type="number" placeholder="Value SGD" step="0.01" value={formData.currentValue} onChange={(e) => setFormData({ ...formData, currentValue: e.target.value })} className="px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm" />
-                  </div>
-                  <div className="p-2 bg-gray-700 rounded-lg">
-                    <div className="flex gap-2 items-center mb-2"><span className="text-xs text-gray-400">USD→SGD:</span><input type="number" step="0.01" value={exchangeRate} onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 1.35)} className="w-16 px-2 py-1 bg-gray-600 border border-gray-500 text-white rounded text-xs" /></div>
-                    <div className="flex gap-2">
-                      <input type="number" placeholder="USD" value={usdInput} onChange={(e) => setUsdInput(e.target.value)} className="flex-1 px-2 py-1.5 bg-gray-600 border border-gray-500 text-white rounded text-sm" />
-                      <button onClick={() => usdInput && setFormData({ ...formData, purchasePrice: (parseFloat(usdInput) * exchangeRate).toFixed(2) })} className="px-2 py-1 bg-orange-600 text-white rounded text-xs">→Cost</button>
-                      <button onClick={() => usdInput && setFormData({ ...formData, currentValue: (parseFloat(usdInput) * exchangeRate).toFixed(2) })} className="px-2 py-1 bg-amber-600 text-white rounded text-xs">→Value</button>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={resetForm} className="flex-1 py-2 border border-gray-600 text-gray-300 rounded-lg text-sm">Cancel</button>
-                    <button onClick={handleSubmit} disabled={syncing} className="flex-1 py-2 bg-orange-600 text-white rounded-lg text-sm disabled:opacity-50">{syncing ? 'Saving...' : (editingProduct ? 'Update' : 'Add')}</button>
-                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={resetForm} style={{ flex: 1, padding: '10px', backgroundColor: '#374151', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}>Cancel</button>
+                  <button onClick={handleSubmit} disabled={syncing} style={{ flex: 1, padding: '10px', backgroundColor: '#ea580c', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', opacity: syncing ? 0.5 : 1 }}>{syncing ? 'Saving...' : (editingProduct ? 'Update' : 'Add')}</button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
+        {/* Sell Modal */}
         {showSellForm && sellingProduct && (
-          <div className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-800 rounded-lg max-w-sm w-full border border-gray-700">
-              <div className="p-4">
-                <div className="flex justify-between mb-3"><h2 className="text-lg font-bold text-green-400">Record Sale</h2><button onClick={() => { setShowSellForm(false); setSellingProduct(null) }} className="text-gray-400 hover:text-white"><Icons.X /></button></div>
-                <div className="mb-3 p-3 bg-gray-700 rounded-lg"><p className="text-orange-400 font-medium">{sellingProduct.name}</p><p className="text-gray-400 text-xs">{sellingProduct.set} • {sellingProduct.quantity}x @ ${sellingProduct.purchasePrice.toFixed(2)}</p></div>
-                <div className="space-y-3">
-                  <input type="number" min="1" max={sellingProduct.quantity} value={sellData.quantity} onChange={(e) => setSellData({ ...sellData, quantity: Math.min(parseInt(e.target.value) || 1, sellingProduct.quantity) })} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm" placeholder="Quantity" />
-                  <input type="number" step="0.01" value={sellData.salePrice} onChange={(e) => setSellData({ ...sellData, salePrice: e.target.value })} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm" placeholder="Sale Price SGD" />
-                  {sellData.salePrice && (
-                    <div className="p-2 bg-gray-700 rounded text-sm">
-                      <div className="flex justify-between text-gray-300"><span>Revenue:</span><span>${(parseFloat(sellData.salePrice) * parseInt(sellData.quantity)).toFixed(2)}</span></div>
-                      <div className="flex justify-between text-gray-300"><span>Cost:</span><span>${(sellingProduct.purchasePrice * parseInt(sellData.quantity)).toFixed(2)}</span></div>
-                      <div className={`flex justify-between font-bold ${(parseFloat(sellData.salePrice) - sellingProduct.purchasePrice) >= 0 ? 'text-green-400' : 'text-red-400'}`}><span>P/L:</span><span>${((parseFloat(sellData.salePrice) - sellingProduct.purchasePrice) * parseInt(sellData.quantity)).toFixed(2)}</span></div>
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <button onClick={() => { setShowSellForm(false); setSellingProduct(null) }} className="flex-1 py-2 border border-gray-600 text-gray-300 rounded-lg text-sm">Cancel</button>
-                    <button onClick={handleSell} disabled={syncing} className="flex-1 py-2 bg-green-600 text-white rounded-lg text-sm disabled:opacity-50">{syncing ? 'Saving...' : 'Confirm'}</button>
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50 }}>
+            <div style={{ backgroundColor: '#1f2937', borderRadius: '8px', padding: '16px', width: '100%', maxWidth: '350px', border: '1px solid #374151' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 style={{ color: '#4ade80', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>Record Sale</h2>
+                <button onClick={() => { setShowSellForm(false); setSellingProduct(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}><Icons.X /></button>
+              </div>
+              <div style={{ padding: '12px', backgroundColor: '#374151', borderRadius: '8px', marginBottom: '12px' }}>
+                <p style={{ color: '#fb923c', fontWeight: '500', margin: 0 }}>{sellingProduct.name}</p>
+                <p style={{ color: '#9ca3af', fontSize: '12px', margin: '4px 0 0' }}>{sellingProduct.set} • {sellingProduct.quantity}x @ ${sellingProduct.purchasePrice.toFixed(2)}</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Quantity</label><input type="number" min="1" max={sellingProduct.quantity} value={sellData.quantity} onChange={(e) => setSellData({ ...sellData, quantity: Math.min(parseInt(e.target.value) || 1, sellingProduct.quantity) })} style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Sale Price SGD</label><input type="number" step="0.01" value={sellData.salePrice} onChange={(e) => setSellData({ ...sellData, salePrice: e.target.value })} style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                {sellData.salePrice && (
+                  <div style={{ padding: '12px', backgroundColor: '#374151', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#d1d5db', fontSize: '13px' }}><span>Revenue:</span><span>${(parseFloat(sellData.salePrice) * parseInt(sellData.quantity)).toFixed(2)}</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#d1d5db', fontSize: '13px' }}><span>Cost:</span><span>${(sellingProduct.purchasePrice * parseInt(sellData.quantity)).toFixed(2)}</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '13px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #4b5563', color: (parseFloat(sellData.salePrice) - sellingProduct.purchasePrice) >= 0 ? '#4ade80' : '#f87171' }}><span>P/L:</span><span>${((parseFloat(sellData.salePrice) - sellingProduct.purchasePrice) * parseInt(sellData.quantity)).toFixed(2)}</span></div>
                   </div>
+                )}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={() => { setShowSellForm(false); setSellingProduct(null) }} style={{ flex: 1, padding: '10px', backgroundColor: '#374151', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}>Cancel</button>
+                  <button onClick={handleSell} disabled={syncing} style={{ flex: 1, padding: '10px', backgroundColor: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', opacity: syncing ? 0.5 : 1 }}>{syncing ? 'Saving...' : 'Confirm'}</button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
+        {/* Add Stock Modal */}
         {showAddStock && addStockProduct && (
-          <div className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-800 rounded-lg max-w-sm w-full border border-gray-700">
-              <div className="p-4">
-                <div className="flex justify-between mb-3"><h2 className="text-lg font-bold text-blue-400">Add Stock</h2><button onClick={() => { setShowAddStock(false); setAddStockProduct(null) }} className="text-gray-400 hover:text-white"><Icons.X /></button></div>
-                <div className="mb-3 p-3 bg-gray-700 rounded-lg"><p className="text-orange-400 font-medium">{addStockProduct.name}</p><p className="text-gray-400 text-xs">Current: {addStockProduct.quantity}x @ ${addStockProduct.purchasePrice.toFixed(2)} avg</p></div>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2">
-                    <input type="number" min="1" value={addStockData.quantity} onChange={(e) => setAddStockData({ ...addStockData, quantity: parseInt(e.target.value) || 1 })} className="px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm" placeholder="Qty" />
-                    <input type="number" step="0.01" value={addStockData.purchasePrice} onChange={(e) => setAddStockData({ ...addStockData, purchasePrice: e.target.value })} className="px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg text-sm" placeholder="Price SGD" />
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50 }}>
+            <div style={{ backgroundColor: '#1f2937', borderRadius: '8px', padding: '16px', width: '100%', maxWidth: '350px', border: '1px solid #374151' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 style={{ color: '#60a5fa', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>Add Stock</h2>
+                <button onClick={() => { setShowAddStock(false); setAddStockProduct(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}><Icons.X /></button>
+              </div>
+              <div style={{ padding: '12px', backgroundColor: '#374151', borderRadius: '8px', marginBottom: '12px' }}>
+                <p style={{ color: '#fb923c', fontWeight: '500', margin: 0 }}>{addStockProduct.name}</p>
+                <p style={{ color: '#9ca3af', fontSize: '12px', margin: '4px 0 0' }}>Current: {addStockProduct.quantity}x @ ${addStockProduct.purchasePrice.toFixed(2)} avg</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Add Qty</label><input type="number" min="1" value={addStockData.quantity} onChange={(e) => setAddStockData({ ...addStockData, quantity: parseInt(e.target.value) || 1 })} style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                  <div><label style={{ display: 'block', fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Price SGD</label><input type="number" step="0.01" value={addStockData.purchasePrice} onChange={(e) => setAddStockData({ ...addStockData, purchasePrice: e.target.value })} placeholder="0.00" style={{ width: '100%', padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} /></div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input type="number" step="0.01" value={addStockUsd} onChange={(e) => setAddStockUsd(e.target.value)} placeholder="USD" style={{ flex: 1, padding: '8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '6px', color: 'white', fontSize: '14px' }} />
+                  <button onClick={() => addStockUsd && setAddStockData({ ...addStockData, purchasePrice: (parseFloat(addStockUsd) * exchangeRate).toFixed(2) })} style={{ padding: '8px 12px', backgroundColor: '#60a5fa', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '11px' }}>Convert</button>
+                </div>
+                {addStockData.purchasePrice && (
+                  <div style={{ padding: '12px', backgroundColor: '#374151', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#d1d5db', fontSize: '13px' }}><span>New Total Qty:</span><span>{addStockProduct.quantity + parseInt(addStockData.quantity)}</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#d1d5db', fontSize: '13px' }}><span>New Avg Cost:</span><span>${(((addStockProduct.purchasePrice * addStockProduct.quantity) + (parseFloat(addStockData.purchasePrice) * parseInt(addStockData.quantity))) / (addStockProduct.quantity + parseInt(addStockData.quantity))).toFixed(2)}</span></div>
                   </div>
-                  <div className="flex gap-2">
-                    <input type="number" placeholder="USD" value={addStockUsd} onChange={(e) => setAddStockUsd(e.target.value)} className="flex-1 px-2 py-1.5 bg-gray-600 border border-gray-500 text-white rounded text-sm" />
-                    <button onClick={() => addStockUsd && setAddStockData({ ...addStockData, purchasePrice: (parseFloat(addStockUsd) * exchangeRate).toFixed(2) })} className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs">Convert</button>
-                  </div>
-                  {addStockData.purchasePrice && (
-                    <div className="p-2 bg-gray-900 rounded text-sm">
-                      <div className="flex justify-between text-gray-300"><span>New Qty:</span><span>{addStockProduct.quantity + parseInt(addStockData.quantity || 0)}</span></div>
-                      <div className="flex justify-between text-gray-300"><span>New Avg:</span><span>${(((addStockProduct.purchasePrice * addStockProduct.quantity) + (parseFloat(addStockData.purchasePrice || 0) * parseInt(addStockData.quantity || 0))) / (addStockProduct.quantity + parseInt(addStockData.quantity || 0))).toFixed(2)}</span></div>
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <button onClick={() => { setShowAddStock(false); setAddStockProduct(null) }} className="flex-1 py-2 border border-gray-600 text-gray-300 rounded-lg text-sm">Cancel</button>
-                    <button onClick={handleAddStock} disabled={syncing} className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm disabled:opacity-50">{syncing ? 'Saving...' : 'Add'}</button>
-                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={() => { setShowAddStock(false); setAddStockProduct(null) }} style={{ flex: 1, padding: '10px', backgroundColor: '#374151', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}>Cancel</button>
+                  <button onClick={handleAddStock} disabled={syncing} style={{ flex: 1, padding: '10px', backgroundColor: '#60a5fa', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', opacity: syncing ? 0.5 : 1 }}>{syncing ? 'Saving...' : 'Add Stock'}</button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
+        {/* Sales History Modal */}
         {showSalesHistory && (
-          <div className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] border border-gray-700 flex flex-col">
-              <div className="p-4 border-b border-gray-700 flex justify-between">
-                <h2 className="text-lg font-bold text-orange-400">Sales History</h2>
-                <div className="flex gap-2">
-                  <button onClick={() => exportToCSV('sales')} className="flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded text-xs"><Icons.Download /> Export</button>
-                  <button onClick={() => setShowSalesHistory(false)} className="text-gray-400 hover:text-white"><Icons.X /></button>
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50 }}>
+            <div style={{ backgroundColor: '#1f2937', borderRadius: '8px', padding: '16px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflow: 'auto', border: '1px solid #374151' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 style={{ color: '#fb923c', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>Sales History</h2>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button onClick={() => exportToCSV('sales')} style={{ padding: '6px 12px', backgroundColor: '#16a34a', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}><Icons.Download /> Export</button>
+                  <button onClick={() => setShowSalesHistory(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}><Icons.X /></button>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-4">
-                {sales.length === 0 ? (
-                  <div className="text-center text-gray-400 py-8"><Icons.Cart /><p className="mt-2">No sales yet</p></div>
+              
+              {/* Sales Summary */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>
+                <div style={{ backgroundColor: '#374151', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Total Sales</p>
+                  <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#60a5fa', margin: 0 }}>{sales.length}</p>
+                </div>
+                <div style={{ backgroundColor: '#374151', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Revenue</p>
+                  <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#fbbf24', margin: 0 }}>${sales.reduce((s, sale) => s + sale.salePrice * sale.quantity, 0).toFixed(2)}</p>
+                </div>
+                <div style={{ backgroundColor: '#374151', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Profit</p>
+                  <p style={{ fontSize: '18px', fontWeight: 'bold', color: realizedPL >= 0 ? '#4ade80' : '#f87171', margin: 0 }}>${realizedPL.toFixed(2)}</p>
+                </div>
+              </div>
+
+              {sales.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+                  <Icons.History />
+                  <p style={{ marginTop: '8px' }}>No sales recorded yet</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {sales.map((sale) => (
+                    <div key={sale.id} style={{ backgroundColor: '#374151', borderRadius: '8px', padding: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                        <div>
+                          <p style={{ color: '#fb923c', fontWeight: '500', margin: 0, fontSize: '14px' }}>{sale.productName}</p>
+                          <p style={{ color: '#9ca3af', fontSize: '11px', margin: '2px 0 0' }}>{sale.set} • {sale.productType} • {sale.language} • {sale.condition}{sale.grade && ` • ${sale.grade}`}</p>
+                        </div>
+                        <span style={{ color: '#6b7280', fontSize: '11px' }}>{new Date(sale.date).toLocaleDateString()}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '16px', fontSize: '12px' }}>
+                          <span style={{ color: '#9ca3af' }}>Qty: <span style={{ color: '#d1d5db' }}>{sale.quantity}</span></span>
+                          <span style={{ color: '#9ca3af' }}>Cost: <span style={{ color: '#d1d5db' }}>${sale.purchasePrice.toFixed(2)}</span></span>
+                          <span style={{ color: '#9ca3af' }}>Sale: <span style={{ color: '#d1d5db' }}>${sale.salePrice.toFixed(2)}</span></span>
+                          <span style={{ color: sale.profitLoss >= 0 ? '#4ade80' : '#f87171', fontWeight: '500' }}>P/L: ${sale.profitLoss.toFixed(2)}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          {undoSaleConfirmId === sale.id ? (
+                            <>
+                              <button onClick={() => handleUndoSale(sale)} style={{ padding: '2px 8px', backgroundColor: '#eab308', color: 'black', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>Y</button>
+                              <button onClick={() => setUndoSaleConfirmId(null)} style={{ padding: '2px 8px', backgroundColor: '#4b5563', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>N</button>
+                            </>
+                          ) : deleteSaleConfirmId === sale.id ? (
+                            <>
+                              <button onClick={() => handleDeleteSale(sale.id)} style={{ padding: '2px 8px', backgroundColor: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>Y</button>
+                              <button onClick={() => setDeleteSaleConfirmId(null)} style={{ padding: '2px 8px', backgroundColor: '#4b5563', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>N</button>
+                            </>
+                          ) : (
+                            <>
+                              <button onClick={() => setUndoSaleConfirmId(sale.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#eab308', padding: '4px' }} title="Undo Sale"><Icons.Undo /></button>
+                              <button onClick={() => setDeleteSaleConfirmId(sale.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f87171', padding: '4px' }} title="Delete"><Icons.Trash /></button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Analytics Dashboard Modal */}
+        {showDashboard && (
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50 }}>
+            <div style={{ backgroundColor: '#1f2937', borderRadius: '8px', padding: '16px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflow: 'auto', border: '1px solid #374151' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 style={{ color: '#7c3aed', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>📊 Analytics Dashboard</h2>
+                <button onClick={() => setShowDashboard(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}><Icons.X /></button>
+              </div>
+              
+              {/* Summary Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '16px' }}>
+                <div style={{ backgroundColor: '#374151', borderRadius: '8px', padding: '12px' }}>
+                  <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Total Sales</p>
+                  <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#4ade80', margin: 0 }}>{sales.length}</p>
+                </div>
+                <div style={{ backgroundColor: '#374151', borderRadius: '8px', padding: '12px' }}>
+                  <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Avg Sale Value</p>
+                  <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#60a5fa', margin: 0 }}>${avgSaleValue.toFixed(2)}</p>
+                </div>
+                <div style={{ backgroundColor: '#374151', borderRadius: '8px', padding: '12px' }}>
+                  <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Total Revenue</p>
+                  <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#fbbf24', margin: 0 }}>${sales.reduce((s, sale) => s + sale.salePrice * sale.quantity, 0).toFixed(2)}</p>
+                </div>
+                <div style={{ backgroundColor: '#374151', borderRadius: '8px', padding: '12px' }}>
+                  <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>Total Profit</p>
+                  <p style={{ fontSize: '20px', fontWeight: 'bold', color: realizedPL >= 0 ? '#4ade80' : '#f87171', margin: 0 }}>${realizedPL.toFixed(2)}</p>
+                </div>
+              </div>
+
+              {/* Profit by Month */}
+              <div style={{ backgroundColor: '#374151', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '14px', color: '#d1d5db', margin: '0 0 12px 0' }}>Profit by Month</h3>
+                {salesChartData.length > 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'end', gap: '8px', height: '120px' }}>
+                    {salesChartData.map((d, i) => {
+                      const maxProfit = Math.max(...salesChartData.map(x => Math.abs(x.profit)), 1)
+                      const height = Math.abs(d.profit) / maxProfit * 100
+                      return (
+                        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <span style={{ fontSize: '10px', color: d.profit >= 0 ? '#4ade80' : '#f87171', marginBottom: '4px' }}>${d.profit}</span>
+                          <div style={{ width: '100%', height: `${height}px`, backgroundColor: d.profit >= 0 ? '#4ade80' : '#f87171', borderRadius: '4px 4px 0 0', minHeight: '4px' }}></div>
+                          <span style={{ fontSize: '10px', color: '#9ca3af', marginTop: '4px' }}>{d.month}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 ) : (
-                  <div className="space-y-2">
-                    {sales.map((s) => (
-                      <div key={s.id} className="p-3 bg-gray-700 rounded-lg">
-                        <div className="flex justify-between">
-                          <div><p className="text-orange-400 font-medium text-sm">{s.productName}</p><p className="text-gray-400 text-xs">{s.set} • Qty: {s.quantity} @ ${s.salePrice.toFixed(2)}</p></div>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-sm font-bold ${s.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>{s.profitLoss >= 0 ? '+' : ''}${s.profitLoss.toFixed(2)}</span>
-                            {undoSaleConfirmId === s.id ? (
-                              <><button onClick={() => handleUndoSale(s)} className="px-2 py-0.5 bg-amber-600 text-white rounded text-xs">Y</button><button onClick={() => setUndoSaleConfirmId(null)} className="px-2 py-0.5 bg-gray-600 text-white rounded text-xs">N</button></>
-                            ) : deleteSaleConfirmId === s.id ? (
-                              <><button onClick={() => handleDeleteSale(s.id)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs">Y</button><button onClick={() => setDeleteSaleConfirmId(null)} className="px-2 py-0.5 bg-gray-600 text-white rounded text-xs">N</button></>
-                            ) : (
-                              <><button onClick={() => setUndoSaleConfirmId(s.id)} className="text-amber-400 hover:text-amber-300"><Icons.Undo /></button><button onClick={() => setDeleteSaleConfirmId(s.id)} className="text-red-400 hover:text-red-300"><Icons.Trash /></button></>
-                            )}
+                  <p style={{ color: '#6b7280', fontSize: '12px', textAlign: 'center' }}>No sales data yet</p>
+                )}
+              </div>
+
+              {/* Inventory by Type */}
+              <div style={{ backgroundColor: '#374151', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '14px', color: '#d1d5db', margin: '0 0 12px 0' }}>Inventory by Type</h3>
+                {totalItems > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {Object.entries(typeDistribution).sort((a, b) => b[1] - a[1]).map(([type, count]) => {
+                      const percentage = (count / totalItems) * 100
+                      return (
+                        <div key={type}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                            <span style={{ color: '#d1d5db' }}>{type}</span>
+                            <span style={{ color: '#9ca3af' }}>{count} ({percentage.toFixed(1)}%)</span>
+                          </div>
+                          <div style={{ height: '8px', backgroundColor: '#1f2937', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${percentage}%`, backgroundColor: '#7c3aed', borderRadius: '4px' }}></div>
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">{new Date(s.date).toLocaleDateString()}</p>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p style={{ color: '#6b7280', fontSize: '12px', textAlign: 'center' }}>No inventory data</p>
+                )}
+              </div>
+
+              {/* Top Products by Value */}
+              <div style={{ backgroundColor: '#374151', borderRadius: '8px', padding: '12px' }}>
+                <h3 style={{ fontSize: '14px', color: '#d1d5db', margin: '0 0 12px 0' }}>Top Products by Value</h3>
+                {topProducts.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {topProducts.map((p, i) => (
+                      <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#1f2937', borderRadius: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ width: '20px', height: '20px', backgroundColor: '#7c3aed', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: 'white' }}>{i + 1}</span>
+                          <div>
+                            <p style={{ color: '#fb923c', fontSize: '12px', margin: 0, fontWeight: '500' }}>{p.name}</p>
+                            <p style={{ color: '#6b7280', fontSize: '10px', margin: 0 }}>{p.set} • {p.quantity}x</p>
+                          </div>
+                        </div>
+                        <span style={{ color: '#4ade80', fontSize: '13px', fontWeight: '500' }}>${(p.currentValue * p.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
+                ) : (
+                  <p style={{ color: '#6b7280', fontSize: '12px', textAlign: 'center' }}>No products yet</p>
                 )}
-              </div>
-              <div className="p-3 border-t border-gray-700 bg-gray-900">
-                <div className="flex justify-between"><span className="text-gray-400">Total Realized P/L:</span><span className={`text-lg font-bold ${realizedPL >= 0 ? 'text-green-400' : 'text-red-400'}`}>${realizedPL.toFixed(2)}</span></div>
               </div>
             </div>
           </div>
         )}
+
       </div>
     </div>
   )
