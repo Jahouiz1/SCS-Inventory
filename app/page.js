@@ -50,6 +50,7 @@ export default function SecretCardSociety() {
   const [lowStockThreshold, setLowStockThreshold] = useState(3)
   const [filters, setFilters] = useState({ productType: '', language: '', condition: '', showLowStock: false })
   const [showFilters, setShowFilters] = useState(false)
+  const [showDashboard, setShowDashboard] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -158,6 +159,17 @@ export default function SecretCardSociety() {
   const unrealizedPL = totalValue - totalCost
   const totalItems = products.reduce((s, p) => s + p.quantity, 0)
   const realizedPL = sales.reduce((s, sale) => s + sale.profitLoss, 0)
+
+  // Analytics data
+  const salesByMonth = sales.reduce((acc, sale) => {
+    const month = new Date(sale.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+    acc[month] = (acc[month] || 0) + sale.profitLoss
+    return acc
+  }, {})
+  const salesChartData = Object.entries(salesByMonth).map(([month, profit]) => ({ month, profit: Math.round(profit * 100) / 100 })).slice(-6)
+  const typeDistribution = products.reduce((acc, p) => { acc[p.productType || 'Single Card'] = (acc[p.productType || 'Single Card'] || 0) + p.quantity; return acc }, {})
+  const topProducts = [...products].sort((a, b) => (b.currentValue * b.quantity) - (a.currentValue * a.quantity)).slice(0, 5)
+  const avgSaleValue = sales.length > 0 ? sales.reduce((s, sale) => s + sale.salePrice * sale.quantity, 0) / sales.length : 0
 
   if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center"><div className="text-center"><Icons.Loader /><p className="text-gray-400 mt-2">Loading...</p></div></div>
 
