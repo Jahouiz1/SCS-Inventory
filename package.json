@@ -1,27 +1,6 @@
 {
   "name": "secret-card-society",
   "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
-  },
-  "dependencies": {
-    "next": "14.2.21",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "@supabase/supabase-js": "^2.39.0",
-    "recharts": "^2.10.0",
-    "lucide-react": "^0.263.1",
-    "tailwindcss": "^3.3.0",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.31"
-  }
-}
-{
-  "name": "secret-card-society",
-  "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -35,8 +14,3 @@
     "xlsx": "^0.18.5"
   }
 }
-```
-
-Just add this line (with the comma on the previous line):
-```
-    "xlsx": "^0.18.5"
